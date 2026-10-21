@@ -1,0 +1,30 @@
+# Basic CI: runs the automated tests on every push to main.
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: UsePythonVersion@0
+    displayName: Use Python 3.11
+    inputs:
+      versionSpec: '3.11'
+      addToPath: true
+
+  - script: |
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+    displayName: Install dependencies
+
+  - script: python -m pytest --junitxml=test-results.xml
+    displayName: Run tests
+
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: test-results.xml
